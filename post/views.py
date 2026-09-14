@@ -1,6 +1,8 @@
 from django.shortcuts import redirect, render
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import get_object_or_404
+from django.db.models import F
+
 
 from post.form import PostForm
 from .models import Post
@@ -43,3 +45,13 @@ def post_create(request):
     else:
         form = PostForm()
     return render(request, "post/post_create.html", {"form": form})
+def post_vote(request, pk, vote_type):
+    post = get_object_or_404(Post, pk=pk)
+
+    if vote_type == "like":
+        post.likes = F('likes') + 1
+    elif vote_type == "dislike":
+        post.dislikes = F('dislikes') + 1
+
+    post.save()
+    return redirect(request.META.get('HTTP_REFERER', 'post:post_list'))

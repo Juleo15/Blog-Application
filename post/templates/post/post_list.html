@@ -13,7 +13,17 @@
     <p class="date">
       Published {{ post.publish }} by {{ post.author }}
     </p>
-    
+
+    <div class="vote-buttons">
+      <form action="{% url 'post:post_vote' post.pk 'like' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">👍 {{ post.likes }}</button>
+      </form>
+      <form action="{% url 'post:post_vote' post.pk 'dislike' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">👎 {{ post.dislikes }}</button>
+      </form>
+    </div>
 
     {{ post.body|truncatewords:30|linebreaks }}
   {% endfor %}

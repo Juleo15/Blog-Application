@@ -27,6 +27,10 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     content = models.TextField(default="")
 
+    liked_by = models.ManyToManyField(User, related_name="liked_posts", blank=0)
+    disliked_by = models.ManyToManyField(User, related_name="disliked_posts", blank=0)
+
+
     objects = models.Manager()
 
     def get_absolute_url(self):
