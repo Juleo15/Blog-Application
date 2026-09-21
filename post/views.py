@@ -2,6 +2,10 @@ from django.shortcuts import redirect, render
 from django.core.paginator import Paginator, PageNotAnInteger
 from django.shortcuts import get_object_or_404
 from django.db.models import F
+import json
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
 
 
 from post.form import PostForm
@@ -27,8 +31,8 @@ def post_list(request):
     }
     return render(request, 'post/post_list.html', context)
 
-def post_detail(request, id):
-    post = get_object_or_404(Post, id=id)
+def post_detail(request, pk):
+    post = get_object_or_404(Post, pk=pk)
   
     return render(
         request,
@@ -55,3 +59,33 @@ def post_vote(request, pk, vote_type):
 
     post.save()
     return redirect(request.META.get('HTTP_REFERER', 'post:post_list'))
+
+@require_POST
+def post_share(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    raw_emails = request.POST.get('emails', '')
+    message = request.POST.get('message', '')
+
+    # Split by comma, strip whitespace, drop empty entries
+    emails = [e.strip() for e in raw_emails.split(',') if e.strip()]
+
+    if not emails:
+        return JsonResponse({'success': False, 'error': 'Enter at least one email.'})
+
+    post_url = request.build_absolute_uri(post.get_absolute_url())
+    subject = f"{request.user if request.user.is_authenticated else 'Someone'} shared a post: {post.title}"
+    body = f"{message}\n\nRead it here: {post_url}"
+
+    try:
+        send_mail(
+            subject,
+            body,
+            None,  # uses DEFAULT_FROM_EMAIL from settings.py
+            emails,
+            fail_silently=False,
+        )
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'Could not send email. Try again later.'})
+
+    return JsonResponse({'success': True})

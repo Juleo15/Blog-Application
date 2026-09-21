@@ -1,4 +1,5 @@
 body { 
+    background:#3b3a3a;
     margin:0;
     padding:0;
     font-family:helvetica, sans-serif; 
@@ -103,4 +104,92 @@ input[type=submit] {
     border-radius: 50%;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     cursor: pointer;
+}
+.share-toggle {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 14px;
+}
+.share-toggle:hover {
+  background: #eef8ff;
+  border-color: #00abff;
+}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-close {
+  cursor: pointer;
+  font-size: 22px;
+  color: #999;
+  line-height: 1;
+}
+.modal-close:hover {
+  color: #333;
+}
+
+#shareForm input,
+#shareForm textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#shareForm button[type="submit"] {
+  background: #00abff;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+#shareForm button[type="submit"]:hover {
+  background: #0088cc;
+}
+
+.status-success {
+  color: #1a9c4f;
+  font-size: 13px;
+  margin: 8px 0;
+}
+.status-error {
+  color: #cc0033;
+  font-size: 13px;
+  margin: 8px 0;
 }

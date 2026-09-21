@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ post.title }}</h1>
+  <p class="date">
+    Published {{ post.publish }} by {{ post.author }}
+  </p>
+  <p>
+  {{ post.content|linebreaks }}
+  </p>
+ 
+  <button class="share-toggle" onclick="openShareModal()">Share</button>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Share this post</h2>
+        <span class="modal-close" onclick="closeShareModal()">&times;</span>
+      </div>
+
+      <form id="shareForm" method="post" action="{% url 'post:post_share' post.id %}">
+        {% csrf_token %}
+        <label for="id_emails">Recipient emails (comma separated)</label>
+        <input type="text" id="id_emails" name="emails" placeholder="jane@example.com, tom@example.com" required>
+
+        <label for="id_message">Add a message (optional)</label>
+        <textarea id="id_message" name="message" rows="3" placeholder="Thought you'd enjoy this..."></textarea>
+
+        <div id="shareStatus"></div>
+
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  {% with comments.count as total_comments %}
+    <h2>
+      {{ total_comments }} comment{{ total_comments|pluralize }}
+    </h2>
+  {% endwith %}
+  {% for comment in comments %}
+    <div class="comment">
+      <p class="info">
+        Comment {{ forloop.counter }} by {{ comment.name }}
+        {{ comment.created }}
+      </p>
+      {{ comment.body|linebreaks }}
+    </div>
+  {% empty %}
+    <p>There are no comments yet.</p>
+  {% endfor %}
+  {% comment %}
+  {% include "blog/post/includes/comment_form.html" %}
+  {% endcomment %}
+
+  <script>
+  function openShareModal() {
+    document.getElementById('shareModal').classList.add('open');
+  }
+
+  function closeShareModal() {
+    document.getElementById('shareModal').classList.remove('open');
+  }
+
+  // Close modal when clicking outside the box
+  document.getElementById('shareModal').addEventListener('click', function(event) {
+    if (event.target === this) {
+      closeShareModal();
+    }
+  });
+
+  // Submit via fetch so the page doesn't reload
+  document.getElementById('shareForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const form = event.target;
+    const statusEl = document.getElementById('shareStatus');
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        statusEl.textContent = 'Sent!';
+        statusEl.className = 'status-success';
+        form.reset();
+        setTimeout(closeShareModal, 1200);
+      } else {
+        statusEl.textContent = data.error || 'Something went wrong.';
+        statusEl.className = 'status-error';
+      }
+    })
+    .catch(() => {
+      statusEl.textContent = 'Something went wrong.';
+      statusEl.className = 'status-error';
+    });
+  });
+  </script>
+{% endblock %}
