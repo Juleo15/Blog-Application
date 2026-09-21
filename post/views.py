@@ -1,13 +1,19 @@
 from django.shortcuts import redirect, render
 from django.core.paginator import Paginator, PageNotAnInteger
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404,redirect, render
 from django.db.models import F
 import json
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.views.decorators.http import require_POST
+from django.contrib.auth import authenticate
+from django.http import HttpResponse
+from django.contrib.auth.models import User
 
 
+
+from .form import UserForm
+from post import form
 from post.form import PostForm
 from .models import Post
 
@@ -89,3 +95,32 @@ def post_share(request, pk):
         return JsonResponse({'success': False, 'error': 'Could not send email. Try again later.'})
 
     return JsonResponse({'success': True})
+
+
+def login(request):
+    """ Understand the login view function. It handles both GET and POST requests for user authentication. """
+    if request.method == "GET":
+        return render(request, "post/login.html", {"form": UserForm()})
+    if request.method =="POST":
+        form = UserForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
+
+            try:
+                user = authenticate(username=username, password=password)
+                if user is not None:
+                    # return HttpResponse(f"Login successful for user: {user.username} {user.password}")
+                    return redirect("post:post_list")
+                else:
+                    return HttpResponse("Invalid credentials", status=401)
+            except User.DoesNotExist:
+                return HttpResponse("")
+            else:
+                return HttpResponse("Invalid credientials", status=401)
+
+
+def user_detail(request, id):
+    user = get_object_or_404(User, id=id)
+    return render(request, "post/user_detail.html", {"user": user})
+        
